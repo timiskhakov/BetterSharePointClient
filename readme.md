@@ -19,7 +19,6 @@ class Subscription
 var url = "http://sharepoint2016";
 var credentials = CredentialCache.DefaultNetworkCredentials;
 var listName = "Subscriptions";
-var queryString = @"<View></View>";
 
 var fields = new[] { "ID", "Created", "CompanyEmployee", "ApplicationSubscription" };
 Func<Dictionary<string, object>, Subscription> mapper = fieldValues => new Subscription
@@ -35,7 +34,7 @@ using (var client = new Client(url, credentials))
     List<Subscription> subscriptions;
     try
     {
-        subscriptions = client.GetEntities<Subscription>(listName, queryString, fields, mapper);
+        subscriptions = client.GetEntities<Subscription>(listName, fields, mapper);
     }
     catch (WebException ex)
     {

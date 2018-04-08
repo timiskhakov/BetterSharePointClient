@@ -1,4 +1,5 @@
-﻿using Microsoft.SharePoint.Client;
+﻿using CamlexNET;
+using Microsoft.SharePoint.Client;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -38,7 +39,6 @@ namespace BetterSharePointClient
         /// <returns>List of models</returns>
         public List<T> GetEntities<T>(
             string listName,
-            string queryString,
             IEnumerable<string> fields,
             Func<Dictionary<string, object>, T> mapper,
             int threshold = 5000) where T : class
@@ -59,8 +59,12 @@ namespace BetterSharePointClient
             var max = threshold;
             while (min < list.ItemCount)
             {
-                var camlQuery = new CamlQuery { ViewXml = queryString };
-                var items = list.GetItems(camlQuery);
+                var query = Camlex.Query()
+                    .Where(li =>
+                        (int)li["ID"] >= min &&
+                        (int)li["ID"] < max)
+                    .ToCamlQuery(); ;
+                var items = list.GetItems(query);
                 _clientContext.Load(items, item => item.Include(includes));
                 ExecuteQueryWithCustomErrorMessage($"Error while getting items from the list {listName}");
                 min += threshold;

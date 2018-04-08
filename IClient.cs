@@ -7,7 +7,6 @@ namespace BetterSharePointClient
     {
         List<T> GetEntities<T>(
             string listName,
-            string queryString,
             IEnumerable<string> fields,
             Func<Dictionary<string, object>, T> mapper,
             int threshold = 5000) where T : class;
