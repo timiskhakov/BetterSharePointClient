@@ -8,7 +8,7 @@ using System.Net;
 
 namespace BetterSharePointClient
 {
-    public class Client : IClient, IDisposable
+    public class Client : IDisposable
     {
         private readonly ClientContext _clientContext;
 
@@ -37,6 +37,7 @@ namespace BetterSharePointClient
         /// <param name="mapper">Mapper between a model and list item</param>
         /// <param name="threshold">SharePoint threshold</param>
         /// <returns>List of models</returns>
+        /// <exception cref="WebException">Occurs when something is wrong with a request to SharePoint</exception>
         public List<T> GetEntities<T>(
             string listName,
             IEnumerable<string> fields,
