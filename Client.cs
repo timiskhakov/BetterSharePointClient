@@ -10,6 +10,7 @@ namespace BetterSharePointClient
 {
     public class Client : IDisposable
     {
+        private const int SharePointThreshold = 5000;
         private readonly ClientContext _clientContext;
 
         /// <summary>
@@ -50,7 +51,7 @@ namespace BetterSharePointClient
             string listName,
             IEnumerable<string> fields,
             Expression<Func<ListItem, bool>> filter = null,
-            int threshold = 5000)
+            int threshold = SharePointThreshold)
         {
             var result = new List<Dictionary<string, object>>();
 
