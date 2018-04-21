@@ -17,6 +17,7 @@ namespace BetterSharePointClient
         /// </summary>
         /// <param name="baseUrl">SharePoint web full url</param>
         /// <param name="credentials">SharePoint credentials</param>
+        /// <param name="certificateSerialNumber">Certificate serial number</param>
         public Client(string baseUrl, NetworkCredential credentials)
         {
             _clientContext = new ClientContext(baseUrl)
@@ -28,23 +29,19 @@ namespace BetterSharePointClient
         #region Public API
 
         /// <summary>
-        /// Gets list of models from SharePoint
+        /// Returns a list of items represented by a dictionary: field name, field value
         /// </summary>
-        /// <typeparam name="T">Model</typeparam>
         /// <param name="listName">List name</param>
-        /// <param name="queryString">Caml query string</param>
         /// <param name="fields">Fields to select</param>
-        /// <param name="mapper">Mapper between a model and list item</param>
-        /// <param name="threshold">SharePoint threshold</param>
-        /// <returns>List of models</returns>
+        /// <param name="threshold">SharePoint list threshold</param>
+        /// <returns>List of items</returns>
         /// <exception cref="WebException">Occurs when something is wrong with a request to SharePoint</exception>
-        public List<T> GetEntities<T>(
+        public List<Dictionary<string, object>> GetEntities(
             string listName,
             IEnumerable<string> fields,
-            Func<Dictionary<string, object>, T> mapper,
-            int threshold = 5000) where T : class
+            int threshold = 5000)
         {
-            var result = new List<T>();
+            var result = new List<Dictionary<string, object>>();
 
             List list = _clientContext.Web.Lists.GetByTitle(listName);
             _clientContext.Load(list, l => l.ItemCount);
@@ -68,11 +65,12 @@ namespace BetterSharePointClient
                 var items = list.GetItems(query);
                 _clientContext.Load(items, item => item.Include(includes));
                 ExecuteQueryWithCustomErrorMessage($"Error while getting items from the list {listName}");
+
                 min += threshold;
                 max += threshold;
-                IEnumerable<T> range = items
+                IEnumerable<Dictionary<string, object>> range = items
                     .AsEnumerable()
-                    .Select(li => mapper(li.FieldValues));
+                    .Select(li => li.FieldValues);
                 result.AddRange(range);
             }
 
