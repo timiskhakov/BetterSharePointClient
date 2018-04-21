@@ -18,11 +18,20 @@ namespace BetterSharePointClient
         /// <param name="baseUrl">SharePoint web full url</param>
         /// <param name="credentials">SharePoint credentials</param>
         /// <param name="certificateSerialNumber">Certificate serial number</param>
-        public Client(string baseUrl, NetworkCredential credentials)
+        public Client(string baseUrl, NetworkCredential credentials, string certificateSerialNumber = null)
         {
             _clientContext = new ClientContext(baseUrl)
             {
                 Credentials = credentials
+            };
+            if (!string.IsNullOrEmpty(certificateSerialNumber))
+            {
+                _clientContext.ExecutingWebRequest += (s, e) =>
+                {
+                    var request = e.WebRequestExecutor.WebRequest;
+                    var certificate = ConnectionHelper.GetCertificate(certificateSerialNumber);
+                    request.ClientCertificates.Add(certificate);
+                };
             };
         }
 
