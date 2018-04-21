@@ -42,12 +42,14 @@ namespace BetterSharePointClient
         /// </summary>
         /// <param name="listName">List name</param>
         /// <param name="fields">Fields to select</param>
+        /// <param name="filter">Field filter</param>
         /// <param name="threshold">SharePoint list threshold</param>
         /// <returns>List of items</returns>
         /// <exception cref="WebException">Occurs when something is wrong with a request to SharePoint</exception>
         public List<Dictionary<string, object>> GetEntities(
             string listName,
             IEnumerable<string> fields,
+            Expression<Func<ListItem, bool>> filter = null,
             int threshold = 5000)
         {
             var result = new List<Dictionary<string, object>>();
@@ -66,10 +68,9 @@ namespace BetterSharePointClient
             var max = threshold;
             while (min < list.ItemCount)
             {
+                Expression<Func<ListItem, bool>> unionFilter = CreateFilter(min, max, filter);
                 var query = Camlex.Query()
-                    .Where(li =>
-                        (int)li["ID"] >= min &&
-                        (int)li["ID"] < max)
+                    .Where(unionFilter)
                     .ToCamlQuery(); ;
                 var items = list.GetItems(query);
                 _clientContext.Load(items, item => item.Include(includes));
@@ -94,6 +95,20 @@ namespace BetterSharePointClient
         }
 
         #region Private Methods
+
+        private Expression<Func<ListItem, bool>> CreateFilter(int min, int max, Expression<Func<ListItem, bool>> customFilter)
+        {
+            Expression<Func<ListItem, bool>> idFilter = li => 
+                (int)li["ID"] >= min &&
+                (int)li["ID"] < max;
+            if (customFilter == null)
+            {
+                return idFilter;
+            }
+            BinaryExpression body = Expression.AndAlso(idFilter.Body, customFilter.Body);
+            Expression<Func<ListItem, bool>> union = Expression.Lambda<Func<ListItem, bool>>(body, idFilter.Parameters[0]);
+            return union;
+        }
 
         private void ExecuteQueryWithCustomErrorMessage(string errorMessage)
         {
