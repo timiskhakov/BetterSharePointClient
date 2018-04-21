@@ -5,36 +5,19 @@ A small library to retrieve data from SharePoint 2016 lists.
 ## Usage
 
 ```csharp
-
-class Subscription
-{
-    public int Id { get; set; }
-    public DateTime Created { get; set; }
-    public string User { get; set; }
-    public string SubscriptionType { get; set; }
-}
-
-// ...
-
 var url = "http://sharepoint2016";
 var credentials = CredentialCache.DefaultNetworkCredentials;
 var listName = "Subscriptions";
 
-var fields = new[] { "ID", "Created", "CompanyEmployee", "ApplicationSubscription" };
-Func<Dictionary<string, object>, Subscription> mapper = fieldValues => new Subscription
-{
-    Id = (int)fieldValues["ID"],
-    Created = (DateTime)fieldValues["Created"],
-    User = (fieldValues["CompanyEmployee"] as FieldUserValue)?.LookupValue,
-    SubscriptionType = fieldValues["ApplicationSubscription"] as string
-};
+var fields = new[] { "Created", "CompanyEmployee", "ApplicationSubscription" };
+Expression<Func<ListItem, bool>> filter = li => (int) li["ID"] <= 100;
 
 using (var client = new Client(url, credentials))
 {
-    List<Subscription> subscriptions;
+    List<Dictionary<string, object>> subscriptions;
     try
     {
-        subscriptions = client.GetEntities<Subscription>(listName, fields, mapper);
+        subscriptions = client.GetEntities(listName, fields, filter);
     }
     catch (WebException ex)
     {
