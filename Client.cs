@@ -69,9 +69,12 @@ namespace BetterSharePointClient
             var max = threshold;
             while (min < list.ItemCount)
             {
-                Expression<Func<ListItem, bool>> unionFilter = CreateFilter(min, max, filter);
                 var query = Camlex.Query()
-                    .Where(unionFilter)
+                    .WhereAll(new[]
+                    {
+                        li => (int)li["ID"] >= min && (int)li["ID"] < max,
+                        filter
+                    })
                     .ToCamlQuery(); ;
                 var items = list.GetItems(query);
                 _clientContext.Load(items, item => item.Include(includes));
@@ -96,20 +99,6 @@ namespace BetterSharePointClient
         }
 
         #region Private Methods
-
-        private Expression<Func<ListItem, bool>> CreateFilter(int min, int max, Expression<Func<ListItem, bool>> customFilter)
-        {
-            Expression<Func<ListItem, bool>> idFilter = li => 
-                (int)li["ID"] >= min &&
-                (int)li["ID"] < max;
-            if (customFilter == null)
-            {
-                return idFilter;
-            }
-            BinaryExpression body = Expression.AndAlso(idFilter.Body, customFilter.Body);
-            Expression<Func<ListItem, bool>> union = Expression.Lambda<Func<ListItem, bool>>(body, idFilter.Parameters[0]);
-            return union;
-        }
 
         private void ExecuteQueryWithCustomErrorMessage(string errorMessage)
         {
