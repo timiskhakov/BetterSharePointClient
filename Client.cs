@@ -57,7 +57,13 @@ namespace BetterSharePointClient
 
             List list = _clientContext.Web.Lists.GetByTitle(listName);
             _clientContext.Load(list, l => l.ItemCount);
-            ExecuteQueryWithCustomErrorMessage($"Error while getting information about the list {listName}");
+            ExecuteQueryWithCustomErrorMessage($"Error while retrieving information about the list {listName}");
+
+            var maxId = GetMaxId(list);
+            if (maxId == 0)
+            {
+                return result;
+            }
 
             var includes = fields.Select(f =>
             {
@@ -67,25 +73,26 @@ namespace BetterSharePointClient
 
             var min = 0;
             var max = threshold;
-            while (min < list.ItemCount)
+            while (min < maxId)
             {
                 var query = Camlex.Query()
                     .WhereAll(new[]
                     {
-                        li => (int)li["ID"] >= min && (int)li["ID"] < max,
+                        li => (int)li["ID"] > min && (int)li["ID"] <= max,
                         filter
                     })
                     .ToCamlQuery(); ;
                 var items = list.GetItems(query);
                 _clientContext.Load(items, item => item.Include(includes));
-                ExecuteQueryWithCustomErrorMessage($"Error while getting items from the list {listName}");
+                ExecuteQueryWithCustomErrorMessage($"Error while retrieving items from the list {listName}");
 
-                min += threshold;
-                max += threshold;
                 IEnumerable<Dictionary<string, object>> range = items
                     .AsEnumerable()
                     .Select(li => li.FieldValues);
                 result.AddRange(range);
+
+                min += threshold;
+                max += threshold;
             }
 
             return result;
@@ -99,6 +106,24 @@ namespace BetterSharePointClient
         }
 
         #region Private Methods
+
+        private int GetMaxId(List list)
+        {
+            var caml = Camlex.Query()
+                .OrderBy(i => i["ID"] as Camlex.Desc)
+                .Take(1)
+                .ToCamlQuery();
+            ListItemCollection items = list.GetItems(caml);
+            _clientContext.Load(items, li => li.Include(i => i["ID"]));
+            ExecuteQueryWithCustomErrorMessage($"Error while retrieving max id from the list");
+
+            if (items.Count == 0)
+            {
+                return 0;
+            }
+            var maxId = (int)items.First().FieldValues["ID"];
+            return maxId;
+        }
 
         private void ExecuteQueryWithCustomErrorMessage(string errorMessage)
         {
