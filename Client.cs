@@ -123,7 +123,7 @@ namespace BetterSharePointClient
             return maxId;
         }
 
-        private IEnumerable<Expression<Func<ListItem, bool>>> GetFilters(int min, int max, Expression<Func<ListItem, bool>> filter)
+        private static IEnumerable<Expression<Func<ListItem, bool>>> GetFilters(int min, int max, Expression<Func<ListItem, bool>> filter)
         {
             yield return li => (int)li["ID"] > min && (int)li["ID"] <= max;
             if (filter != null)
