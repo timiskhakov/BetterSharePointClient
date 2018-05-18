@@ -75,12 +75,10 @@ namespace BetterSharePointClient
             var max = threshold;
             while (min < maxId)
             {
+                var filters = GetFilters(min, max, filter)
+                    .ToArray();
                 var query = Camlex.Query()
-                    .WhereAll(new[]
-                    {
-                        li => (int)li["ID"] > min && (int)li["ID"] <= max,
-                        filter
-                    })
+                    .WhereAll(filters)
                     .ToCamlQuery(); ;
                 var items = list.GetItems(query);
                 _clientContext.Load(items, item => item.Include(includes));
@@ -123,6 +121,15 @@ namespace BetterSharePointClient
             }
             var maxId = (int)items.First().FieldValues["ID"];
             return maxId;
+        }
+
+        private IEnumerable<Expression<Func<ListItem, bool>>> GetFilters(int min, int max, Expression<Func<ListItem, bool>> filter)
+        {
+            yield return li => (int)li["ID"] > min && (int)li["ID"] <= max;
+            if (filter != null)
+            {
+                yield return filter;
+            }
         }
 
         private void ExecuteQueryWithCustomErrorMessage(string errorMessage)
