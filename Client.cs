@@ -56,9 +56,6 @@ namespace BetterSharePointClient
             var result = new List<Dictionary<string, object>>();
 
             List list = _clientContext.Web.Lists.GetByTitle(listName);
-            _clientContext.Load(list, l => l.ItemCount);
-            ExecuteQueryWithCustomErrorMessage($"Error while retrieving information about the list {listName}");
-
             var maxId = GetMaxId(list);
             if (maxId == 0)
             {
