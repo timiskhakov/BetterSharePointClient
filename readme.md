@@ -27,6 +27,6 @@ using (var client = new Client(url, credentials))
 ```csharp
 using (var client = new Client(url, credentials))
 {
-    client.MoveItemToFolder(listName, 5, $"/Lists/{listName}/SomeFolder");
+    client.MoveItemToFolder(listName, 5, $"Lists/{listName}/SomeFolder");
 }
 ```

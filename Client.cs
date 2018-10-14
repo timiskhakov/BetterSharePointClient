@@ -97,7 +97,7 @@ namespace BetterSharePointClient
         /// Moves an item to a specified folder inside the same list
         /// </summary>
         /// <param name="listName">List title</param>
-        /// /// <param name="itemId">Item ID</param>
+        /// <param name="itemId">Item ID</param>
         /// <param name="relativeFolderUrl">Relative folder URL</param>
         public void MoveItemToFolder(string listTitle, int itemId, string relativeFolderUrl)
         {
