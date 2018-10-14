@@ -96,6 +96,26 @@ namespace BetterSharePointClient
             return result;
         }
 
+        /// <summary>
+        /// Moves an item to a specified folder inside the same list
+        /// </summary>
+        /// <param name="item">List item</param>
+        /// <param name="relativeFolderUrl">Relative folder URL</param>
+        public void MoveItemToFolder(ListItem item, string relativeFolderUrl)
+        {
+            _clientContext.Load(item,
+                i => i["ID"],
+                i => i["FileLeafRef"],
+                i => i["FileDirRef"],
+                i => i["FileRef"]);
+            ExecuteQueryWithCustomErrorMessage("Error while retrieving item information");
+
+            var file = _clientContext.Web.GetFileByServerRelativeUrl(item["FileRef"].ToString());
+            var fileUrl = item["FileRef"].ToString().Replace(item["FileDirRef"].ToString(), relativeFolderUrl);
+            file.MoveTo(fileUrl, MoveOperations.Overwrite);
+            ExecuteQueryWithCustomErrorMessage($"Error while updating the item {item["ID"]}");
+        }
+
         #endregion
 
         public void Dispose()
