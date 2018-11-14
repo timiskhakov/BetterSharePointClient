@@ -1,6 +1,6 @@
 # BetterSharePointClient
 
-A small library to retrieve data from SharePoint 2016 lists.
+A small library to manipulate SharePoint 2016 data.
 
 ## Usage
 
@@ -18,7 +18,7 @@ var fields = new[] { "Created", "CompanyEmployee", "ApplicationSubscription" };
 Expression<Func<ListItem, bool>> filter = li => (int) li["ID"] <= 100;
 using (var client = new Client(url, credentials))
 {
-    List<Dictionary<string, object>> subscriptions = subscriptions = client.GetEntities(listName, fields, filter);
+    List<Dictionary<string, object>> subscriptions = client.GetEntities(listName, fields, filter);
 }
 ```
 
